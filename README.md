@@ -1,2 +1,1 @@
-# TinyChatter
-"# TinyChatter-Final" 
+TinyChatter, an old-fashioned chat group
