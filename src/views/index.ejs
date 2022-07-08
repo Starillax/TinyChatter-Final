@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TinyChatter - Bate-Papo</title>
+    <style>
+        body {
+            margin: 0;
+            padding-bottom: 3rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #form {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 0.25rem;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            height: 3rem;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
+        #input {
+            border: none;
+            padding: 0 1rem;
+            flex-grow: 1;
+            border-radius: 2rem;
+            margin: 0.25rem;
+        }
+
+        #input:focus {
+            outline: none;
+        }
+
+        #form>button {
+            background: #8D021F;
+            border: none;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #messages>li {
+            padding: 0.5rem 1rem;
+        }
+
+        #messages>li:nth-child(odd) {
+            background: rgba(252, 226, 5, 0.7);
+        }
+
+        #top {
+            background-color: rgba(250, 129, 40, 0.5);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #changenick {
+            position: absolute;
+            top: 5%;
+            left: 75%;
+        }
+
+        #inputnick {
+            border: 1px solid black;
+            padding: 0 1rem;
+            flex-grow: 1;
+            border-radius: 2rem;
+            margin: 0.25rem;
+        }
+
+        #changenick>button {
+            background: #B43757;
+            border: 1px solid black;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+
+        body {
+            background-color: rgba(252, 226, 5, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="top">
+        <h3>Usuários conectados:</h3>
+        <ul id="users"></ul>
+        
+        <form id="changenick" action="">
+            <input id="inputnick" autocomplete="off" placeholder="Digite aqui o seu novo nick"/>
+            <button>Salvar Nick</button>
+        </form>        
+    </div>
+
+    <ul id="messages"></ul>
+
+    <form id="form" action="">
+        <input id="input" autocomplete="off"/>
+        <button>Enviar</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+        var form = document.getElementById('form');
+        var formnick = document.getElementById('changenick');
+        var input = document.getElementById('input');
+        var inputnick = document.getElementById('inputnick');
+        const users = document.getElementById('users');
+
+        socket.emit('user connection', "<%= iniNick %>");
+
+        formnick.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (inputnick.value) {
+                socket.emit('set nick', inputnick.value);
+                inputnick.value = '';
+            }
+        });
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (input.value) {
+                socket.emit('chat message', input.value);
+                input.value = '';
+            }
+        });
+
+        const messages = document.getElementById('messages');
+        socket.on('chat message', function(msg) {
+            console.log('chegou uma msg ' + msg);
+            var item = document.createElement('li');
+            item.textContent = msg;
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        socket.on('connected users', function(msg) {
+            users.innerHTML = "";
+            for (let i = 0; i < msg.length; i++) {
+                var item = document.createElement('li');
+                item.textContent = msg[i][1];
+                users.appendChild(item);
+            }
+        });
+    </script>
+</body>
+
+</html>
